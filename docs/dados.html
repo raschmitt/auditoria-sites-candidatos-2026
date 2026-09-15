@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dados — Auditoria de Sites de Candidatos 2026</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="topbar">
+  <span class="brand">Auditoria de Sites — Eleições 2026</span>
+  <a href="index.html">Início</a>
+  <a href="dados.html" class="active">Dados / Tabela</a>
+  <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026" target="_blank">Código no GitHub ↗</a>
+</nav>
+
+<div class="wrap">
+  <h1>Tabela de sites analisados</h1>
+  <p>5.418 sites próprios declarados por candidatos às Eleições Gerais 2026,
+  com o resultado da verificação de hospedagem. Use os filtros abaixo para
+  buscar por candidato, UF, cargo, partido ou status.</p>
+
+  <div class="filters">
+    <input type="search" id="f-busca" placeholder="Buscar por nome ou domínio...">
+    <select id="f-uf"><option value="">Todas as UFs</option></select>
+    <select id="f-cargo"><option value="">Todos os cargos</option></select>
+    <select id="f-partido"><option value="">Todos os partidos</option></select>
+    <select id="f-status">
+      <option value="">Todos os status</option>
+      <option value="br">Confirmado no Brasil</option>
+      <option value="fora">Confirmado fora do Brasil</option>
+      <option value="cdn">Indeterminado (CDN)</option>
+      <option value="erro">Erro (site fora do ar)</option>
+    </select>
+  </div>
+
+  <div class="count-line" id="count-line">Carregando dados...</div>
+
+  <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Candidato</th>
+          <th>UF</th>
+          <th>Cargo</th>
+          <th>Partido</th>
+          <th>Domínio</th>
+          <th>Status</th>
+          <th>País (IP)</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="pagination">
+    <button id="btn-prev">← Anterior</button>
+    <span id="page-info"></span>
+    <button id="btn-next">Próxima →</button>
+  </div>
+
+  <footer>
+    Dados coletados em 15/09/2026 a partir da API pública do TSE. Ver
+    <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026" target="_blank">metodologia completa e código-fonte</a>.
+  </footer>
+</div>
+
+<script>
+const PAGE_SIZE = 50;
+let ALL = [];
+let FILTERED = [];
+let page = 0;
+
+function statusDe(r) {
+  if (r.hospedado_no_brasil === 'True') return 'br';
+  if (r.hospedado_no_brasil === 'False') return 'fora';
+  if (r.atras_de_cdn_proxy) return 'cdn';
+  if (r.hospedagem_erro) return 'erro';
+  return 'outro';
+}
+function statusLabel(s) {
+  return {br: 'No Brasil', fora: 'Fora do Brasil', cdn: 'Indeterminado (CDN)', erro: 'Erro', outro: '—'}[s] || '—';
+}
+
+function preencherSelect(id, valores) {
+  const sel = document.getElementById(id);
+  [...new Set(valores)].filter(Boolean).sort().forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    sel.appendChild(opt);
+  });
+}
+
+function aplicarFiltros() {
+  const busca = document.getElementById('f-busca').value.trim().toLowerCase();
+  const uf = document.getElementById('f-uf').value;
+  const cargo = document.getElementById('f-cargo').value;
+  const partido = document.getElementById('f-partido').value;
+  const status = document.getElementById('f-status').value;
+
+  FILTERED = ALL.filter(r => {
+    if (uf && r.uf !== uf) return false;
+    if (cargo && r.cargo_nome !== cargo) return false;
+    if (partido && r.partido_sigla !== partido) return false;
+    if (status && statusDe(r) !== status) return false;
+    if (busca) {
+      const alvo = (r.nome_urna + ' ' + r.dominio).toLowerCase();
+      if (!alvo.includes(busca)) return false;
+    }
+    return true;
+  });
+  page = 0;
+  render();
+}
+
+function render() {
+  const tbody = document.getElementById('tbody');
+  const start = page * PAGE_SIZE;
+  const rows = FILTERED.slice(start, start + PAGE_SIZE);
+  tbody.innerHTML = rows.map(r => {
+    const s = statusDe(r);
+    const pais = r.pais ? `${r.pais}${r.ip ? ' ('+r.ip+')' : ''}` : (r.hospedagem_erro ? '—' : (r.atras_de_cdn_proxy || '—'));
+    return `<tr>
+      <td>${esc(r.nome_urna)}</td>
+      <td>${esc(r.uf)}</td>
+      <td>${esc(r.cargo_nome)}</td>
+      <td>${esc(r.partido_sigla)}</td>
+      <td class="dom"><a href="https://${esc(r.dominio)}" target="_blank" rel="noopener">${esc(r.dominio)}</a></td>
+      <td><span class="badge ${s}">${statusLabel(s)}</span></td>
+      <td>${esc(pais)}</td>
+    </tr>`;
+  }).join('');
+
+  const totalPaginas = Math.max(1, Math.ceil(FILTERED.length / PAGE_SIZE));
+  document.getElementById('page-info').textContent = `Página ${page + 1} de ${totalPaginas}`;
+  document.getElementById('btn-prev').disabled = page === 0;
+  document.getElementById('btn-next').disabled = page >= totalPaginas - 1;
+  document.getElementById('count-line').textContent =
+    `${FILTERED.length.toLocaleString('pt-BR')} de ${ALL.length.toLocaleString('pt-BR')} registros`;
+}
+
+function esc(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+document.getElementById('btn-prev').addEventListener('click', () => { if (page > 0) { page--; render(); } });
+document.getElementById('btn-next').addEventListener('click', () => {
+  const totalPaginas = Math.ceil(FILTERED.length / PAGE_SIZE);
+  if (page < totalPaginas - 1) { page++; render(); }
+});
+['f-busca','f-uf','f-cargo','f-partido','f-status'].forEach(id => {
+  document.getElementById(id).addEventListener('input', aplicarFiltros);
+});
+
+fetch('data/sites_analise.json')
+  .then(r => r.json())
+  .then(data => {
+    ALL = data;
+    FILTERED = data;
+    preencherSelect('f-uf', ALL.map(r => r.uf));
+    preencherSelect('f-cargo', ALL.map(r => r.cargo_nome));
+    preencherSelect('f-partido', ALL.map(r => r.partido_sigla));
+    render();
+  })
+  .catch(err => {
+    document.getElementById('count-line').textContent = 'Erro ao carregar dados: ' + err;
+  });
+</script>
+
+</body>
+</html>

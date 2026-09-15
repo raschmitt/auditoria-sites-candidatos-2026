@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditoria de Sites de Candidatos 2026</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="topbar">
+  <span class="brand">Auditoria de Sites — Eleições 2026</span>
+  <a href="index.html" class="active">Início</a>
+  <a href="dados.html">Dados / Tabela</a>
+  <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026" target="_blank">Código no GitHub ↗</a>
+</nav>
+
+<div class="wrap">
+
+  <h1>Onde estão hospedados os sites dos candidatos em 2026?</h1>
+  <p class="lead">
+    Levantamento independente sobre as <strong>20.965 candidaturas</strong> das
+    Eleições Gerais 2026 (Presidente, Governador, Senador, Deputado Federal e
+    Deputado Estadual/Distrital, nas 27 UFs), verificando se os sites próprios
+    declarados à Justiça Eleitoral estão hospedados dentro do Brasil, como a
+    lei exige.
+  </p>
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="num">5.418</div><div class="lbl">sites próprios encontrados</div></div>
+    <div class="stat-card ok"><div class="num">1.978</div><div class="lbl">confirmados no Brasil</div></div>
+    <div class="stat-card bad"><div class="num">930</div><div class="lbl">confirmados fora do Brasil</div></div>
+    <div class="stat-card warn"><div class="num">1.574</div><div class="lbl">indeterminados (atrás de CDN)</div></div>
+  </div>
+
+  <p style="text-align:center; margin: 24px 0 40px;">
+    <a class="btn" href="dados.html">Ver a tabela completa e filtrar por UF, partido, cargo →</a>
+  </p>
+
+  <h2>De onde vêm esses dados?</h2>
+  <div class="card">
+    <p>
+      Tudo aqui vem de uma única fonte: a <strong>API pública do próprio
+      painel oficial do TSE</strong>, o
+      <a href="https://divulgacandcontas.tse.jus.br/divulga/" target="_blank">Divulgação de Candidaturas e Contas Eleitorais</a>
+      — o mesmo sistema que qualquer pessoa pode consultar candidato por
+      candidato no site do TSE. Nenhuma base paga, vazada ou privada foi
+      usada.
+    </p>
+    <p>
+      O processo, resumido:
+    </p>
+    <ol>
+      <li>Para cada uma das 20.965 candidaturas, buscamos os endereços
+        eletrônicos que o próprio candidato declarou à Justiça Eleitoral
+        (é obrigatório declarar, conforme a lei citada abaixo).</li>
+      <li>Separamos o que é efetivamente um <em>site próprio</em> do que é só
+        um perfil em rede social (Instagram, Facebook, TikTok etc.) — a regra
+        de hospedagem só faz sentido para o site próprio, já que redes
+        sociais são hospedadas pelas próprias empresas (Meta, Google, X…),
+        não é escolha do candidato.</li>
+      <li>Para cada site próprio, descobrimos o servidor por trás do domínio
+        (via DNS) e verificamos em qual país esse servidor está
+        geograficamente localizado.</li>
+    </ol>
+    <p style="margin-bottom:0;">
+      Quer entender os detalhes técnicos — como contornamos bloqueios do site
+      do TSE, os limites do método de geolocalização, os critérios de
+      classificação etc.? Toda a metodologia completa, o código-fonte e os
+      dados brutos estão documentados no
+      <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026" target="_blank">repositório no GitHub</a>
+      — em especial o arquivo
+      <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026/blob/main/docs/METODOLOGIA.md" target="_blank">METODOLOGIA.md</a>.
+    </p>
+  </div>
+
+  <h2>Por que isso importa — a legislação por trás</h2>
+  <div class="card">
+    <ul class="legis">
+      <li>
+        <strong>Lei nº 9.504/1997 (Lei das Eleições), art. 57-B, inciso I</strong> —
+        permite propaganda eleitoral em site do candidato, mas exige que o
+        endereço eletrônico seja comunicado à Justiça Eleitoral.
+        <br><a href="https://www.planalto.gov.br/ccivil_03/leis/l9504.htm" target="_blank">Ler a lei no Planalto ↗</a>
+      </li>
+      <li>
+        <strong>Resolução TSE nº 23.610/2019</strong> — regulamenta a
+        propaganda eleitoral na internet, incluindo a exigência de que o
+        site esteja hospedado em servidor no Brasil.
+        <br><a href="https://www.tse.jus.br/legislacao/compilada/res/2019/resolucao-no-23-610-de-18-de-dezembro-de-2019" target="_blank">Ver a resolução no site do TSE ↗</a>
+      </li>
+    </ul>
+    <p style="margin-bottom:0;">
+      Em resumo: um site de campanha até pode existir fora de rede social,
+      mas precisa estar hospedado dentro do território brasileiro e o
+      endereço precisa ter sido informado oficialmente ao TSE. Este
+      levantamento verifica justamente esse ponto, em escala nacional.
+    </p>
+  </div>
+
+  <h2>O que este site NÃO é</h2>
+  <div class="card">
+    <p style="margin-bottom:0;">
+      Isto é um levantamento técnico de triagem, feito com dados públicos —
+      <strong>não é uma denúncia formal, nem um parecer jurídico</strong>.
+      Geolocalização de IP tem limitações conhecidas (sites atrás de
+      serviços como Cloudflare podem aparecer com país "errado" mesmo
+      hospedados no Brasil — por isso esses casos aparecem separados como
+      "indeterminado", nunca como violação confirmada). Qualquer achado
+      individual relevante deveria ser confirmado manualmente antes de
+      qualquer uso oficial. Detalhes completos das limitações estão na
+      <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026/blob/main/docs/METODOLOGIA.md" target="_blank">metodologia</a>.
+    </p>
+  </div>
+
+  <footer>
+    Dados coletados em 15/09/2026 a partir da API pública do TSE.
+    Código-fonte, dados brutos/processados e documentação completa em
+    <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026" target="_blank">github.com/raschmitt/auditoria-sites-candidatos-2026</a>.
+  </footer>
+
+</div>
+</body>
+</html>
