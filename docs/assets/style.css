@@ -75,8 +75,8 @@ a { color: var(--accent); }
   text-align: center;
 }
 .stat-card .num { font-size: 26px; font-weight: 700; }
-.stat-card .lbl { font-size: 12.5px; color: var(--text-dim); margin-top: 4px; }
-.stat-card .desc { font-size: 11.5px; color: var(--text-dim); opacity: 0.75; margin-top: 8px; line-height: 1.4; }
+.stat-card .lbl { font-size: 19px; font-weight: 700; color: var(--text); margin-top: 4px; }
+.stat-card .desc { font-size: 16px; color: var(--text-dim); margin-top: 8px; line-height: 1.4; }
 .stat-card.ok .num { color: var(--green); }
 .stat-card.bad .num { color: var(--red); }
 .stat-card.warn .num { color: var(--amber); }
