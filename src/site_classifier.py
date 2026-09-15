@@ -26,7 +26,16 @@ REDES_SOCIAIS = {
     "twitch.tv", "sticker.ly", "deezer.com", "deezer.page.link",
     "music.amazon.com", "music.amazon.com.br", "clubhouse.com",
     "mastodon.social", "reddit.com", "telegram.dog",
+    "soundcloud.com", "kw.ai", "vm.tiktok.com", "vt.tiktok.com",
+    "onlyfans.com", "signal.me", "signal.org",
 }
+
+# NOTA: esta lista não é (e não pretende ser) exaustiva — é impossível
+# antecipar todas as plataformas que 20 mil candidatos, digitando livremente,
+# possam ter colado no campo `sites`. Itens não reconhecidos aqui acabam
+# classificados como `site_proprio` e passam pela análise de hospedagem —
+# na pior hipótese, geram um falso positivo isolado e auditável no CSV de
+# saída (nunca um erro silencioso), facilmente descartável na revisão manual.
 
 AGREGADORES_DE_LINK = {
     "linktr.ee", "beacons.ai", "linkr.bio", "bio.link", "allmylinks.com",

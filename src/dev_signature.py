@@ -77,12 +77,30 @@ def _extrair_generator(html: str) -> str | None:
     return m.group(1) if m else None
 
 
+def _para_string(valor) -> str | None:
+    """
+    python-whois às vezes retorna um campo (org, name...) como lista,
+    quando há múltiplas respostas/camadas de servidores WHOIS. Normaliza
+    sempre para uma única string, para não quebrar código a jusante que
+    espera `.lower()`/regex sobre uma string simples.
+    """
+    if valor is None:
+        return None
+    if isinstance(valor, (list, tuple, set)):
+        vistos = []
+        for v in valor:
+            if v and v not in vistos:
+                vistos.append(v)
+        return "; ".join(str(v) for v in vistos) if vistos else None
+    return str(valor)
+
+
 def _consultar_whois(dominio: str) -> dict:
     try:
         w = whois.whois(dominio)
         org = w.get("org") if isinstance(w, dict) else getattr(w, "org", None)
         name = w.get("name") if isinstance(w, dict) else getattr(w, "name", None)
-        return {"whois_org": org, "whois_name": name}
+        return {"whois_org": _para_string(org), "whois_name": _para_string(name)}
     except Exception as e:
         return {"whois_erro": str(e)}
 

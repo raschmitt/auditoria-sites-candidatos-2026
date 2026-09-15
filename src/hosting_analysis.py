@@ -28,12 +28,30 @@ IP de borda de um CDN.
 from __future__ import annotations
 
 import socket
+import threading
 import time
 
 import requests
 
 IP_API_URL = "http://ip-api.com/json/{ip}?fields=status,message,country,countryCode,isp,org,as"
 RATE_LIMIT_SLEEP = 1.4  # ~42 req/min, com folga em relação ao limite de 45/min
+
+# Rate limiter GLOBAL (compartilhado entre threads, se `analisar_sites.py`
+# rodar a análise em paralelo): garante que, não importa quantas threads
+# estejam chamando `geolocalizar_ip` ao mesmo tempo, a taxa agregada de
+# chamadas à ip-api.com nunca ultrapassa o limite do plano gratuito.
+_rate_lock = threading.Lock()
+_ultima_chamada = 0.0
+
+
+def _aguardar_rate_limit() -> None:
+    global _ultima_chamada
+    with _rate_lock:
+        agora = time.monotonic()
+        espera = RATE_LIMIT_SLEEP - (agora - _ultima_chamada)
+        if espera > 0:
+            time.sleep(espera)
+        _ultima_chamada = time.monotonic()
 
 # Provedores de CDN/proxy/anti-DDoS cuja localização de IP não reflete o
 # servidor de origem real (identificados pelo nome de ISP/organização
@@ -91,8 +109,8 @@ def analisar_hospedagem(dominio: str) -> dict:
         return resultado
     resultado["ip"] = ip
 
+    _aguardar_rate_limit()
     geo = geolocalizar_ip(ip)
-    time.sleep(RATE_LIMIT_SLEEP)
     if "erro" in geo:
         resultado["erro"] = geo["erro"]
         return resultado

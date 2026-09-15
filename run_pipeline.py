@@ -1,13 +1,14 @@
 """
-Orquestrador do pipeline completo de auditoria.
+Orquestrador do pipeline (escopo atual: só hospedagem — ver
+docs/METODOLOGIA.md sobre a etapa de autoria/doação, fora de escopo).
 
-Roda as três etapas em sequência, cada uma via o supervisor (reinício
+Roda as duas etapas em sequência, cada uma via o supervisor (reinício
 automático em caso de travamento do navegador). Pode ser interrompido a
 qualquer momento (Ctrl+C) e retomado depois — cada etapa é resumível
 via checkpoint em CSV.
 
 Uso:
-    DISPLAY=:0 python run_pipeline.py [--etapa {1,2,3,all}]
+    DISPLAY=:0 python run_pipeline.py [--etapa {1,2,all}]
 """
 from __future__ import annotations
 
@@ -22,7 +23,6 @@ SUPERVISOR = DIR / "scripts" / "supervisor.sh"
 ETAPAS = {
     1: ("src/discover_candidatos.py", 180, 40),
     2: ("src/analisar_sites.py", 300, 20),
-    3: ("src/donation_disclosure.py", 180, 20),
 }
 
 
@@ -38,10 +38,10 @@ def rodar_etapa(n: int) -> bool:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--etapa", choices=["1", "2", "3", "all"], default="all")
+    parser.add_argument("--etapa", choices=["1", "2", "all"], default="all")
     args = parser.parse_args()
 
-    etapas_a_rodar = [1, 2, 3] if args.etapa == "all" else [int(args.etapa)]
+    etapas_a_rodar = [1, 2] if args.etapa == "all" else [int(args.etapa)]
     for n in etapas_a_rodar:
         ok = rodar_etapa(n)
         if not ok:

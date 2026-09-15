@@ -4,11 +4,15 @@ Projeto de auditoria técnica que verifica, para **todos os candidatos das
 Eleições Gerais 2026 no Brasil** (Presidente, Governador, Senador,
 Deputado Federal, Deputado Estadual/Distrital e suplentes), se os sites
 próprios declarados à Justiça Eleitoral (art. 57-B da Lei nº 9.504/1997)
-cumprem a exigência de hospedagem em servidor no Brasil, e se há indícios
-de que o desenvolvimento do site foi feito por pessoa jurídica sem o
-correspondente registro na prestação de contas (o que a legislação
-eleitoral veda — apenas pessoa física pode doar bens/serviços estimáveis
-em dinheiro para campanha).
+cumprem a exigência de hospedagem em servidor no Brasil.
+
+> **Escopo atual:** o projeto ficou restrito a essa verificação de
+> hospedagem. A análise de autoria provável (pessoa física x jurídica) e
+> o cruzamento com prestação de contas (`donation_disclosure.py`) foram
+> deixados de lado por decisão do autor — os scripts continuam no
+> repositório (e algumas colunas de autoria ainda aparecem no CSV de
+> saída, como resíduo de execução anterior), mas não fazem parte do
+> escopo/entrega atual do projeto.
 
 > Este é um projeto de análise exploratória/triagem, não uma auditoria
 > jurídica conclusiva. Toda constatação apontada aqui precisa ser
@@ -27,17 +31,13 @@ em dinheiro para campanha).
 2. analisar_sites.py        → data/processed/sites_analise.csv
    Filtra os endereços que são efetivamente "sites próprios" (exclui
    redes sociais, agregadores de link e plataformas de financiamento
-   coletivo) e, para cada um, verifica (a) o país de hospedagem via
-   DNS+geolocalização de IP e (b) sinais técnicos de autoria provável
-   (pessoa física vs. pessoa jurídica).
-
-3. donation_disclosure.py   → data/processed/verificacao_doacao_site.csv
-   Para os sites classificados como prováveis de autoria por pessoa
-   jurídica, cruza com o "ranking de doadores" e "ranking de
-   fornecedores" da prestação de contas pública do candidato, buscando
-   indício de que o serviço foi pago regularmente, doado por CNPJ
-   (vedado) ou não tem registro localizável.
+   coletivo) e, para cada um, verifica o país de hospedagem via
+   DNS + geolocalização de IP.
 ```
+
+> `donation_disclosure.py` (cruzamento com prestação de contas) e a
+> análise de autoria em `dev_signature.py` continuam no repositório mas
+> **fora do escopo atual** — não fazem parte do pipeline ativo.
 
 ## Por que via navegador real (Playwright headed), e não `requests`?
 
@@ -74,8 +74,7 @@ playwright install chromium   # baixa o binário do Chromium (sem --with-deps, v
 # Cada etapa é resumível — pode ser interrompida (Ctrl+C) e rodada de
 # novo; ela pula o que já está salvo no CSV de saída.
 DISPLAY=:0 python src/discover_candidatos.py
-DISPLAY=:0 python src/analisar_sites.py
-DISPLAY=:0 python src/donation_disclosure.py
+python src/analisar_sites.py   # não usa navegador, roda sem DISPLAY
 
 # Ou, com reinício automático em caso de travamento:
 scripts/supervisor.sh src/discover_candidatos.py 180 40
@@ -91,8 +90,7 @@ scripts/supervisor.sh src/discover_candidatos.py 180 40
 | Arquivo | Granularidade | Descrição |
 |---|---|---|
 | `data/raw/candidatos_sites.csv` | 1 linha por candidato | Todos os candidatos 2026, com a lista bruta de sites/redes declarados |
-| `data/processed/sites_analise.csv` | 1 linha por (candidato, site próprio) | Análise de hospedagem + autoria provável |
-| `data/processed/verificacao_doacao_site.csv` | 1 linha por (candidato, site PJ) | Cruzamento com prestação de contas |
+| `data/processed/sites_analise.csv` | 1 linha por (candidato, site próprio) | Análise de hospedagem (colunas de autoria ficam presentes mas fora do escopo atual) |
 
 Documentação completa do método, das limitações e das decisões de
 projeto em [`docs/METODOLOGIA.md`](docs/METODOLOGIA.md).

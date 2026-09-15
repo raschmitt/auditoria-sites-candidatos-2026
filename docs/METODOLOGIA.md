@@ -7,14 +7,18 @@ pedido do responsável pelo repositório.
 ## 1. Objetivo
 
 Verificar, para o universo de candidaturas registradas nas Eleições
-Gerais 2026, dois pontos de conformidade relacionados ao uso de sites de
-campanha na internet:
+Gerais 2026, a **hospedagem em território brasileiro** dos sites
+próprios declarados à Justiça Eleitoral.
 
-1. **Hospedagem em território brasileiro** dos sites próprios declarados
-   à Justiça Eleitoral.
-2. **Registro contábil adequado** de sites que aparentam ter sido
-   desenvolvidos por pessoa jurídica, cruzando indícios técnicos de
-   autoria com a prestação de contas pública de cada candidato.
+> **Nota sobre escopo:** o projeto originalmente também previa (2) uma
+> análise de autoria provável (pessoa física x jurídica) do
+> desenvolvimento do site, cruzada com a prestação de contas, para
+> checar se doações estimáveis vedadas (por CNPJ) haviam sido registradas
+> corretamente. Essa segunda frente foi **deixada de fora do escopo
+> atual** por decisão do autor do projeto. O código correspondente
+> (`src/dev_signature.py`, `src/donation_disclosure.py`) permanece no
+> repositório para eventual retomada futura, mas não é executado nem
+> reportado nas seções abaixo.
 
 ## 2. Base legal considerada
 
@@ -169,64 +173,36 @@ limítrofes precisam de checagem manual (ex.: histórico de DNS para
 tentar identificar a origem real por trás do CDN) antes de qualquer
 conclusão a ser comunicada ao TSE.
 
-### 5.3. Estimativa de autoria (pessoa física vs. pessoa jurídica)
+### 5.3. Estimativa de autoria (pessoa física vs. pessoa jurídica) — FORA DO ESCOPO ATUAL
 
-Como não existe uma forma de obter isso com certeza absoluta a partir de
-fora, o projeto usa um conjunto de **sinais técnicos observáveis e
-auditáveis** (nunca uma classificação "caixa-preta"):
+> ⚠️ Esta subseção descreve uma análise que **não faz parte do escopo
+> atual** do projeto (ver nota na seção 1). Fica registrada aqui só como
+> documentação do que o código em `src/dev_signature.py` faz, para
+> quem eventualmente reativar essa frente — os resultados dela **não**
+> são usados nas conclusões deste relatório.
 
-| Sinal | Peso | Direção |
-|---|---|---|
-| Tag `<meta name="generator">` de ferramenta de autoatendimento (Wix, Canva, Webnode, Google Sites, Carrd) | +2 pessoa física | Indica ferramenta de "monte seu site" sem necessidade de agência |
-| Texto no rodapé tipo "Desenvolvido por / Criado por / Powered by [Nome]" | +1 a +2 pessoa jurídica | Mais forte se o nome contém termos como "agência", "estúdio", "marketing digital" |
-| CNPJ visível no HTML | +1 pessoa jurídica | Indício de que uma empresa está envolvida |
-| Organização registrante no WHOIS do domínio contendo razão social (Ltda, EIRELI, S.A., ME) | +2 pessoa jurídica | Registro formal do domínio em nome de empresa |
+O módulo usava um conjunto de sinais técnicos observáveis (meta
+generator, texto de rodapé, CNPJ no HTML, organização no WHOIS) para
+estimar se o site parecia ter sido feito por pessoa física ou jurídica,
+sempre registrando as evidências encontradas em vez de dar um veredito
+"caixa-preta". Colunas correspondentes ainda podem aparecer preenchidas
+em `sites_analise.csv` (resíduo de quando essa etapa esteve ativa), mas
+não devem ser usadas para nenhuma conclusão.
 
-Cada evidência encontrada é registrada individualmente na coluna
-`evidencias_autoria` do CSV de saída — a classificação final
-(`autoria_provavel`) é apenas a soma desses sinais, nunca um veredito
-automatizado a ser tomado como prova.
+## 6. Etapa 3 — Cruzamento com a prestação de contas — FORA DO ESCOPO ATUAL
 
-## 6. Etapa 3 — Cruzamento com a prestação de contas
+> ⚠️ Esta etapa (`src/donation_disclosure.py`) **não foi executada**
+> nesta rodada do projeto — dependia da classificação de autoria da
+> seção 5.3, também fora de escopo. Descrição mantida apenas como
+> documentação do código, para eventual retomada futura.
 
-Script: `src/donation_disclosure.py`
-
-Para os sites classificados como prováveis de autoria por pessoa
-jurídica na etapa 2, busca-se na prestação de contas pública do
-candidato (`rankingDoadores` e `rankingFornecedores`, do endpoint
-`prestador/consulta`):
-
-- Se algum **doador com CNPJ** (14 dígitos) aparece no ranking de
-  doadores → **alerta**: doação de pessoa jurídica é vedada por lei,
-  independentemente de estar relacionada ao site.
-- Se o nome da organização identificada por WHOIS aparece no ranking de
-  **fornecedores pagos** → cenário regular (serviço contratado e pago,
-  não doado).
-- Caso contrário → `sem_registro_encontrado`: não foi possível localizar,
-  nos dados públicos disponíveis, nenhum registro correspondente.
-
-### 6.1. Limitação metodológica central desta etapa
-
-O painel público do TSE expõe apenas um **ranking dos maiores** doadores
-e fornecedores por candidato — não a lista itemizada completa de
-receitas/despesas com descrição de cada lançamento (essa granularidade
-só existe no arquivo oficial de prestação de contas, publicado
-integralmente após o processamento eleitoral, e em bases como
-Base dos Dados/dadosabertos.tse.jus.br, ainda não disponíveis para o
-pleito de 2026 no momento desta coleta).
-
-Portanto, **`sem_registro_encontrado` é um indício de triagem, não uma
-prova de omissão**. Pode significar:
-(a) omissão real de receita/despesa (Caixa 2), **ou**
-(b) o registro existe, mas o valor é pequeno o suficiente para não
-    aparecer no recorte de "maiores" doadores/fornecedores exibido
-    publicamente, **ou**
-(c) a correspondência de nomes falhou (razão social divergente do nome
-    fantasia, erro de digitação etc.).
-
-Qualquer achado relevante desta etapa deve ser **verificado manualmente**
-na prestação de contas completa do candidato antes de ser levado
-adiante.
+A ideia era, para sites com indício de autoria por pessoa jurídica,
+cruzar com `rankingDoadores`/`rankingFornecedores` da prestação de
+contas pública, sinalizando doação por CNPJ (vedada), pagamento regular
+como fornecedor, ou ausência de registro localizável — sempre como
+indício de triagem, nunca prova de omissão, dado que o painel público
+só expõe um *ranking* dos maiores valores, não a lista itemizada
+completa.
 
 ## 7. Limitações gerais do projeto
 
