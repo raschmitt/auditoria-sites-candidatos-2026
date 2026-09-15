@@ -2,9 +2,6 @@
 Gera um resumo executivo em Markdown a partir do CSV processado, para
 consulta rápida e para servir de base ao relatório final.
 
-Escopo atual: hospedagem apenas (ver docs/METODOLOGIA.md sobre a
-análise de autoria/doação, fora de escopo).
-
 Saída: docs/RESUMO_EXECUTIVO.md
 """
 from __future__ import annotations
@@ -39,7 +36,7 @@ def main() -> None:
     com_erro = [r for r in analise if r["hospedagem_erro"]]
 
     linhas = [
-        "# Resumo Executivo — Auditoria de Hospedagem de Sites de Candidatos 2026",
+        "# Resumo Executivo, Auditoria de Hospedagem de Sites de Candidatos 2026",
         "",
         f"- Candidaturas cobertas: **{total_candidatos}**",
         f"- Com pelo menos um endereço eletrônico declarado: **{com_algum_endereco}**",
@@ -54,10 +51,10 @@ def main() -> None:
     ]
 
     if fora_brasil:
-        linhas += ["## Detalhe — sites confirmados fora do Brasil", ""]
+        linhas += ["## Detalhe, sites confirmados fora do Brasil", ""]
         for r in fora_brasil:
-            linhas.append(f"- {r['nome_urna']} ({r['uf']}/{r['cargo_nome']}, {r['partido_sigla']}) "
-                          f"— {r['dominio']} — {r['pais']} (IP {r['ip']})")
+            linhas.append(f"- {r['nome_urna']} ({r['uf']}/{r['cargo_nome']}, {r['partido_sigla']}), "
+                          f"{r['dominio']}, {r['pais']} (IP {r['ip']})")
         linhas.append("")
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
