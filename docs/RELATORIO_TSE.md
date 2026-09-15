@@ -43,9 +43,8 @@ Ou seja, dos sites próprios que puderam ser efetivamente verificados
 
 ### 3.1. Sites confirmados fora do Brasil
 
-Lista completa gerada em
-[`RESUMO_EXECUTIVO.md`](RESUMO_EXECUTIVO.md) (930 registros) e no CSV
-`data/processed/sites_analise.csv` (coluna `hospedado_no_brasil=False`).
+Lista completa no CSV `data/processed/sites_analise.csv` (coluna
+`hospedado_no_brasil=False`, 930 registros).
 Alguns padrões notáveis observados:
 
 - **Flávio Bolsonaro** (candidato à Presidência, PL), rede de ~12
