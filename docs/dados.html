@@ -41,13 +41,13 @@
     <table>
       <thead>
         <tr>
-          <th>Candidato</th>
-          <th>UF</th>
-          <th>Cargo</th>
-          <th>Partido</th>
-          <th>Domínio</th>
-          <th>Status</th>
-          <th>País (IP)</th>
+          <th data-sort="nome_urna">Candidato<span class="sort-arrow"></span></th>
+          <th data-sort="uf">UF<span class="sort-arrow"></span></th>
+          <th data-sort="cargo_nome">Cargo<span class="sort-arrow"></span></th>
+          <th data-sort="partido_sigla">Partido<span class="sort-arrow"></span></th>
+          <th data-sort="dominio">Domínio<span class="sort-arrow"></span></th>
+          <th data-sort="_status">Status<span class="sort-arrow"></span></th>
+          <th data-sort="pais">País (IP)<span class="sort-arrow"></span></th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -55,9 +55,9 @@
   </div>
 
   <div class="pagination">
-    <button id="btn-prev">← Anterior</button>
+    <button id="btn-prev"><span class="chevron"></span> Anterior</button>
     <span id="page-info"></span>
-    <button id="btn-next">Próxima →</button>
+    <button id="btn-next">Próxima <span class="chevron"></span></button>
   </div>
 
   <footer>
@@ -71,6 +71,8 @@ const PAGE_SIZE = 50;
 let ALL = [];
 let FILTERED = [];
 let page = 0;
+let sortCol = null;
+let sortDir = 1; // 1 = crescente, -1 = decrescente
 
 function statusDe(r) {
   if (r.hospedado_no_brasil === 'True') return 'br';
@@ -111,8 +113,53 @@ function aplicarFiltros() {
     return true;
   });
   page = 0;
+  aplicarOrdenacao();
+}
+
+function valorParaOrdenar(r, col) {
+  if (col === '_status') return statusLabel(statusDe(r));
+  const v = r[col];
+  return (v == null ? '' : String(v)).toLowerCase();
+}
+
+function aplicarOrdenacao() {
+  if (sortCol) {
+    FILTERED = FILTERED.slice().sort((a, b) => {
+      const va = valorParaOrdenar(a, sortCol);
+      const vb = valorParaOrdenar(b, sortCol);
+      if (va < vb) return -1 * sortDir;
+      if (va > vb) return 1 * sortDir;
+      return 0;
+    });
+  }
+  atualizarSetas();
   render();
 }
+
+function atualizarSetas() {
+  document.querySelectorAll('th[data-sort]').forEach(th => {
+    const arrow = th.querySelector('.sort-arrow');
+    if (th.dataset.sort === sortCol) {
+      arrow.textContent = sortDir === 1 ? ' ▲' : ' ▼';
+    } else {
+      arrow.textContent = ' ⇕';
+    }
+  });
+}
+
+document.querySelectorAll('th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.sort;
+    if (sortCol === col) {
+      sortDir = -sortDir;
+    } else {
+      sortCol = col;
+      sortDir = 1;
+    }
+    page = 0;
+    aplicarOrdenacao();
+  });
+});
 
 function render() {
   const tbody = document.getElementById('tbody');
@@ -162,6 +209,7 @@ fetch('data/sites_analise.json')
     preencherSelect('f-uf', ALL.map(r => r.uf));
     preencherSelect('f-cargo', ALL.map(r => r.cargo_nome));
     preencherSelect('f-partido', ALL.map(r => r.partido_sigla));
+    atualizarSetas();
     render();
   })
   .catch(err => {
