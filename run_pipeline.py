@@ -1,10 +1,9 @@
 """
-Orquestrador do pipeline (escopo atual: só hospedagem — ver
-docs/METODOLOGIA.md sobre a etapa de autoria/doação, fora de escopo).
+Orquestrador do pipeline.
 
 Roda as duas etapas em sequência, cada uma via o supervisor (reinício
 automático em caso de travamento do navegador). Pode ser interrompido a
-qualquer momento (Ctrl+C) e retomado depois — cada etapa é resumível
+qualquer momento (Ctrl+C) e retomado depois, cada etapa é resumível
 via checkpoint em CSV.
 
 Uso:
@@ -21,8 +20,8 @@ DIR = Path(__file__).parent
 SUPERVISOR = DIR / "scripts" / "supervisor.sh"
 
 ETAPAS = {
-    1: ("src/discover_candidatos.py", 180, 40),
-    2: ("src/analisar_sites.py", 300, 20),
+    1: ("scripts/discover_candidatos.py", 180, 40),
+    2: ("scripts/analisar_sites.py", 300, 20),
 }
 
 

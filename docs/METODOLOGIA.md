@@ -68,7 +68,7 @@ Chromium (comum em soluções de bot management como Akamai/Cloudflare
 Bot Manager). A solução adotada foi rodar um Chromium **com interface
 gráfica** (`headless=False`) e fazer as chamadas de API via `fetch()`
 dentro da própria página carregada, replicando exatamente o
-comportamento de um usuário navegando pelo site. Ver `src/tse_client.py`.
+comportamento de um usuário navegando pelo site. Ver `scripts/tse_client.py`.
 
 Essa exigência tem uma implicação prática importante: os crawlers deste
 projeto **não podem rodar num servidor CI/CD puramente headless** sem um
@@ -77,7 +77,7 @@ sessão gráfica disponível.
 
 ## 4. Etapa 1 — Descoberta de candidatos e sites declarados
 
-Script: `src/discover_candidatos.py`
+Script: `scripts/discover_candidatos.py`
 
 1. Busca a estrutura nacional da eleição 2026 (28 "UEs": as 27
    Unidades da Federação + "BR" para a chapa presidencial).
@@ -96,7 +96,7 @@ Universo coberto: **20.965 candidaturas** nacionais nas Eleições Gerais
 
 ## 5. Etapa 2 — Classificação e análise de hospedagem
 
-Script: `src/analisar_sites.py` (usa `site_classifier.py` e
+Script: `scripts/analisar_sites.py` (usa `site_classifier.py` e
 `hosting_analysis.py`)
 
 ### 5.1. Classificação (site próprio vs. rede social vs. outros)

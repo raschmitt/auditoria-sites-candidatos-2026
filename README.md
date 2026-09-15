@@ -39,7 +39,7 @@ um navegador de verdade renderizando a página, inclusive `curl`,
 `requests` e até Playwright/Selenium em **modo headless**. A única
 configuração que funcionou nos testes foi Chromium real, com interface
 gráfica (`headless=False`), acessando a API pública via `fetch()` de
-dentro da própria página carregada. Ver `src/tse_client.py` e a seção
+dentro da própria página carregada. Ver `scripts/tse_client.py` e a seção
 correspondente em `docs/METODOLOGIA.md`.
 
 Isso significa que os scripts deste projeto **precisam rodar numa
@@ -53,7 +53,7 @@ funcionam em um servidor puramente headless/CI sem um display virtual.
 > invisível em vez de uma janela real. Requer `sudo apt-get install
 > xvfb`, ainda não instalado neste ambiente. Depois de instalado, basta
 > envolver os comandos com `xvfb-run -a` (ex.:
-> `xvfb-run -a scripts/supervisor.sh src/discover_candidatos.py 180 40`)
+> `xvfb-run -a scripts/supervisor.sh scripts/discover_candidatos.py 180 40`)
 > em vez de fixar `DISPLAY=:0`.
 
 ## Como rodar
@@ -61,16 +61,16 @@ funcionam em um servidor puramente headless/CI sem um display virtual.
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r scripts/requirements.txt
 playwright install chromium   # baixa o binário do Chromium (sem --with-deps, ver nota abaixo)
 
 # Cada etapa é resumível, pode ser interrompida (Ctrl+C) e rodada de
 # novo, ela pula o que já está salvo no CSV de saída.
-DISPLAY=:0 python src/discover_candidatos.py
-python src/analisar_sites.py   # não usa navegador, roda sem DISPLAY
+DISPLAY=:0 python scripts/discover_candidatos.py
+python scripts/analisar_sites.py   # não usa navegador, roda sem DISPLAY
 
 # Ou, com reinício automático em caso de travamento:
-scripts/supervisor.sh src/discover_candidatos.py 180 40
+scripts/supervisor.sh scripts/discover_candidatos.py 180 40
 ```
 
 > Nota sobre `playwright install`: em ambientes sem acesso a `sudo`
