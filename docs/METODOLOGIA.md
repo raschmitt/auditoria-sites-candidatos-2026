@@ -1,4 +1,4 @@
-# Metodologia — Auditoria de Sites de Candidatos, Eleições Gerais 2026
+# Metodologia, Auditoria de Sites de Candidatos, Eleições Gerais 2026
 
 **Última atualização:** conforme data do commit no controle de versão.
 **Autor:** análise conduzida com apoio de assistente de IA (Claude), a
@@ -75,7 +75,7 @@ projeto **não podem rodar num servidor CI/CD puramente headless** sem um
 display virtual (Xvfb ou equivalente), precisam de um ambiente com
 sessão gráfica disponível.
 
-## 4. Etapa 1 — Descoberta de candidatos e sites declarados
+## 4. Etapa 1, descoberta de candidatos e sites declarados
 
 Script: `scripts/discover_candidatos.py`
 
@@ -94,7 +94,7 @@ Script: `scripts/discover_candidatos.py`
 Universo coberto: **20.965 candidaturas** nacionais nas Eleições Gerais
 2026 (contagem obtida diretamente da API do TSE em 15/09/2026).
 
-## 5. Etapa 2 — Classificação e análise de hospedagem
+## 5. Etapa 2, classificação e análise de hospedagem
 
 Script: `scripts/analisar_sites.py` (usa `site_classifier.py` e
 `hosting_analysis.py`)

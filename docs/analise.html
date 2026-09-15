@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análise, Auditoria de Sites de Candidatos 2026</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="topbar">
+  <span class="brand">Auditoria de Sites, Eleições 2026</span>
+  <a href="index.html">Início</a>
+  <a href="dados.html">Dados</a>
+  <a href="metodologia.html">Metodologia</a>
+  <a href="analise.html" class="active">Análise</a>
+  <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026" target="_blank">Código no GitHub ↗</a>
+</nav>
+
+<div class="wrap prose">
+
+  <h1>Relatório Técnico, Auditoria de Hospedagem de Sites de Candidatos, Eleições Gerais 2026</h1>
+
+  <blockquote>
+    <p>
+      Este documento é destinado a eventual encaminhamento ao Tribunal
+      Superior Eleitoral como subsídio técnico, não como denúncia formal
+      ou parecer jurídico. Todo achado aqui é indício de triagem
+      automatizada, nenhuma conclusão deve ser tomada como prova sem
+      verificação manual complementar (ver seção 4).
+    </p>
+  </blockquote>
+
+  <h2>1. Apresentação</h2>
+  <p>
+    Este relatório resume os resultados de uma auditoria técnica
+    independente sobre o cumprimento da exigência legal de hospedagem em
+    servidor localizado no Brasil para sites de campanha nas Eleições
+    Gerais 2026 (art. 57-B, I, da Lei nº 9.504/1997, c/c Resolução TSE
+    nº 23.610/2019).
+  </p>
+  <p>
+    O escopo cobre <strong>as 20.965 candidaturas registradas nacionalmente</strong>
+    (Presidente, Governador, Senador, Deputado Federal e Deputado
+    Estadual/Distrital, nas 27 Unidades da Federação), com base
+    exclusivamente em dados públicos do próprio painel oficial do TSE
+    (<code>divulgacandcontas.tse.jus.br</code>). Coleta realizada em 15/09/2026.
+  </p>
+  <p>
+    A metodologia completa, incluindo limitações técnicas, está documentada
+    em <a href="metodologia.html">Metodologia</a> e não é repetida aqui.
+  </p>
+
+  <h2>2. Números gerais</h2>
+  <table>
+    <thead><tr><th>Métrica</th><th>Valor</th><th>%</th></tr></thead>
+    <tbody>
+      <tr><td>Candidaturas cobertas</td><td>20.965</td><td>-</td></tr>
+      <tr><td>Com ao menos um endereço eletrônico declarado</td><td>17.469</td><td>83,3%</td></tr>
+      <tr><td>Sites próprios identificados (domínio autônomo, excl. redes sociais)</td><td>5.418</td><td>-</td></tr>
+      <tr><td><strong>Hospedados no Brasil (confirmado)</strong></td><td><strong>1.978</strong></td><td><strong>36,5%</strong></td></tr>
+      <tr><td><strong>Hospedados fora do Brasil (confirmado)</strong></td><td><strong>930</strong></td><td><strong>17,2%</strong></td></tr>
+      <tr><td>Atrás de CDN/proxy global (indeterminável por este método)</td><td>1.574</td><td>29,0%</td></tr>
+      <tr><td>Erro na análise (DNS não resolveu, site fora do ar etc.)</td><td>936</td><td>17,3%</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Ou seja, dos sites próprios que puderam ser efetivamente verificados
+    (hospedagem confirmada, excluindo CDN-indeterminado e erro, base de
+    2.908), <strong>cerca de 32% estão hospedados fora do Brasil</strong>.
+  </p>
+
+  <h2>3. Achados que sugerem verificação manual</h2>
+
+  <h3>3.1. Sites confirmados fora do Brasil</h3>
+  <p>
+    Lista completa no CSV
+    <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026/blob/master/data/processed/sites_analise.csv" target="_blank"><code>data/processed/sites_analise.csv</code></a>
+    (coluna <code>hospedado_no_brasil=False</code>, 930 registros).
+    Alguns padrões notáveis observados:
+  </p>
+  <ul>
+    <li><strong>Flávio Bolsonaro</strong> (candidato à Presidência, PL), rede de ~12
+      domínios próprios (<code>fbtv22.net</code>, <code>fbtv22.com</code>, <code>fbtv22.com.br</code>,
+      <code>tvflavio.net</code>, <code>tvflavio.com</code>, <code>22tv.com.br</code>, <code>tvfb22.*</code> etc.),
+      a maioria concentrada no mesmo bloco de IP geolocalizado na
+      <strong>Lituânia</strong> (<code>2.57.91.91</code>), com outro grupo nos EUA
+      (<code>185.230.63.186</code>). Vários desses domínios usam TLD <code>.com.br</code>, o que
+      demonstra que o sufixo brasileiro não garante hospedagem no Brasil.</li>
+    <li>Diversos candidatos a governador/deputado com domínio <code>.com.br</code>
+      individual resolvendo para provedores de hospedagem genéricos nos
+      EUA, Austrália ou outros países (ex.: <code>davidalmeida.com.br</code>,
+      <code>robertocidade.com.br</code>, <code>serafimcorrea.com.br</code>, <code>zelopesac.com.br</code>).</li>
+  </ul>
+
+  <h3>3.2. Ressalva sobre o grupo "atrás de CDN" (1.574 casos)</h3>
+  <p>
+    Esse grupo <strong>não deve ser interpretado como "em conformidade"</strong> nem
+    como "violação confirmada", é literalmente indeterminado com os dados
+    públicos disponíveis (ver seção 5.2 da <a href="metodologia.html">Metodologia</a>).
+    Uma checagem manual adicional (ex.: histórico de DNS anterior à ativação
+    do CDN/proxy) seria necessária para qualquer conclusão sobre esses casos.
+  </p>
+
+  <h2>4. Ressalvas antes de qualquer uso oficial</h2>
+  <ul>
+    <li>Todos os achados são <strong>indícios de triagem automatizada</strong>, não
+      conclusões jurídicas. Antes de qualquer comunicação formal ao TSE,
+      cada caso relevante precisa ser verificado manualmente e, idealmente,
+      revisado por profissional de Direito Eleitoral.</li>
+    <li>A coleta foi feita em 15/09/2026, um retrato pontual no tempo, sites
+      continuam sendo criados, alterados e desativados ao longo da campanha
+      (936 casos de "erro" já refletem isso: muitos domínios declarados
+      simplesmente não resolvem mais).</li>
+    <li>Geolocalização de IP tem limitações conhecidas (CDNs, ver seção 3.2).
+      Antes de qualquer afirmação pública sobre um candidato específico,
+      reconfirmar manualmente o achado.</li>
+    <li>Ver seção 6 da <a href="metodologia.html">Metodologia</a> para a lista completa de limitações.</li>
+  </ul>
+
+  <h2>5. Reprodutibilidade</h2>
+  <p>
+    Código-fonte completo, dados brutos e processados disponíveis no
+    repositório público no GitHub
+    (<a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026" target="_blank">raschmitt/auditoria-sites-candidatos-2026</a>).
+  </p>
+
+  <footer>
+    <a href="index.html">Início</a> ·
+    <a href="dados.html">Dados</a> ·
+    <a href="metodologia.html">Metodologia</a>
+  </footer>
+
+</div>
+</body>
+</html>

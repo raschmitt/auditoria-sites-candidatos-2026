@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Metodologia, Auditoria de Sites de Candidatos 2026</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<nav class="topbar">
+  <span class="brand">Auditoria de Sites, Eleições 2026</span>
+  <a href="index.html">Início</a>
+  <a href="dados.html">Dados</a>
+  <a href="metodologia.html" class="active">Metodologia</a>
+  <a href="analise.html">Análise</a>
+  <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026" target="_blank">Código no GitHub ↗</a>
+</nav>
+
+<div class="wrap prose">
+
+  <h1>Metodologia, Auditoria de Sites de Candidatos, Eleições Gerais 2026</h1>
+  <p class="meta">
+    <strong>Última atualização:</strong> conforme data do commit no controle de versão.
+    <strong>Autor:</strong> análise conduzida com apoio de assistente de IA (Claude), a pedido do responsável pelo repositório.
+  </p>
+
+  <h2>1. Objetivo</h2>
+  <p>
+    Verificar, para o universo de candidaturas registradas nas Eleições
+    Gerais 2026, a <strong>hospedagem em território brasileiro</strong> dos sites
+    próprios declarados à Justiça Eleitoral.
+  </p>
+
+  <h2>2. Base legal considerada</h2>
+  <ul>
+    <li><strong>Lei nº 9.504/1997 (Lei das Eleições), art. 57-B, inciso I</strong>: a
+      propaganda eleitoral na internet pode ser realizada em sítio do
+      candidato, desde que o endereço eletrônico seja comunicado à Justiça
+      Eleitoral.</li>
+    <li><strong>Resolução TSE nº 23.610/2019</strong> (dispõe sobre propaganda eleitoral),
+      regulamenta a exigência de hospedagem/veiculação de sites de campanha
+      em conformidade com a legislação brasileira.</li>
+  </ul>
+  <blockquote>
+    <p>
+      Este documento reproduz o entendimento da legislação tal como
+      apresentado ao autor do projeto (inclusive via uma busca com resposta
+      de IA, usada como ponto de partida). <strong>Não substitui parecer jurídico
+      formal</strong>, antes de qualquer comunicação oficial ao TSE, recomenda-se
+      validação por profissional do Direito Eleitoral quanto à redação exata
+      vigente de cada dispositivo.
+    </p>
+  </blockquote>
+
+  <h2>3. Fonte de dados</h2>
+  <p>
+    Toda a coleta usa exclusivamente a <strong>API pública do painel
+    "Divulgação de Candidaturas e Contas Eleitorais"</strong>
+    (<code>https://divulgacandcontas.tse.jus.br/divulga/</code>), a mesma que alimenta
+    o site oficial de consulta do TSE. Não há uso de nenhuma base paga,
+    vazada ou não pública.
+  </p>
+  <p>
+    Endpoints usados (descobertos por engenharia reversa das chamadas de
+    rede feitas pela própria SPA oficial do TSE, navegando manualmente pela
+    interface):
+  </p>
+  <table>
+    <thead><tr><th>Endpoint</th><th>Uso</th></tr></thead>
+    <tbody>
+      <tr><td><code>GET /rest/v1/eleicao/eleicao-atual?idEleicao={id}</code></td><td>Estrutura nacional: todas as UFs, cargos e contagem de candidatos</td></tr>
+      <tr><td><code>GET /rest/v1/candidatura/listar/{ano}/{uf}/{id}/{cargo}/candidatos</code></td><td>Lista de candidatos de um cargo/UF</td></tr>
+      <tr><td><code>GET /rest/v1/candidatura/buscar/{ano}/{uf}/{id}/candidato/{idCandidato}</code></td><td>Detalhe do candidato, incl. campo <code>sites</code> (endereços declarados)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>3.1. Obstáculo técnico, bloqueio de automação pelo WAF do TSE</h3>
+  <p>
+    O domínio <code>divulgacandcontas.tse.jus.br</code> (e também <code>www.tse.jus.br</code> e
+    <code>dadosabertos.tse.jus.br</code>) está atrás de um WAF que retorna
+    <strong>HTTP 403 "Access Denied"</strong> para qualquer cliente que não seja um
+    navegador real renderizando a página, isso inclui <code>curl</code>, a biblioteca
+    <code>requests</code> do Python, <strong>e também o Playwright/Selenium rodando em modo
+    headless</strong> (mesmo com IP residencial brasileiro, mesmo mascarando
+    <code>navigator.webdriver</code>).
+  </p>
+  <p>Testes realizados (ver histórico do projeto) mostraram que:</p>
+  <ul>
+    <li><code>curl</code> com headers de navegador, 403</li>
+    <li>Playwright Chromium <code>headless=True</code>, com e sem flags anti-detecção, 403</li>
+    <li>Playwright Chromium <code>headless=False</code> (janela real, mesmo processo,
+      mesma máquina, mesmo IP), <strong>200, funciona normalmente</strong></li>
+  </ul>
+  <p>
+    Conclusão prática: o bloqueio não é por IP/rede, é por alguma
+    característica de fingerprinting específica do modo headless do
+    Chromium (comum em soluções de bot management como Akamai/Cloudflare
+    Bot Manager). A solução adotada foi rodar um Chromium <strong>com interface
+    gráfica</strong> (<code>headless=False</code>) e fazer as chamadas de API via <code>fetch()</code>
+    dentro da própria página carregada, replicando exatamente o
+    comportamento de um usuário navegando pelo site. Ver
+    <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026/blob/master/scripts/tse_client.py" target="_blank"><code>scripts/tse_client.py</code></a>.
+  </p>
+  <p>
+    Essa exigência tem uma implicação prática importante: os crawlers deste
+    projeto <strong>não podem rodar num servidor CI/CD puramente headless</strong> sem um
+    display virtual (Xvfb ou equivalente), precisam de um ambiente com
+    sessão gráfica disponível.
+  </p>
+
+  <h2>4. Etapa 1, descoberta de candidatos e sites declarados</h2>
+  <p>Script: <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026/blob/master/scripts/discover_candidatos.py" target="_blank"><code>scripts/discover_candidatos.py</code></a></p>
+  <ol>
+    <li>Busca a estrutura nacional da eleição 2026 (28 "UEs": as 27
+      Unidades da Federação + "BR" para a chapa presidencial).</li>
+    <li>Para cada combinação UF × cargo (governador, vice, senador, 1º e 2º
+      suplentes, deputado federal, deputado estadual/distrital, e
+      presidente/vice para "BR"), lista todos os candidatos.</li>
+    <li>Para cada candidato, busca o detalhe completo e extrai o campo
+      <code>sites</code>, a lista de endereços eletrônicos que o próprio candidato
+      comunicou à Justiça Eleitoral (nos termos do art. 57-B, I).</li>
+    <li>Salva incrementalmente em <code>data/raw/candidatos_sites.csv</code>, um
+      registro por candidato. Execução é <strong>resumível</strong>: candidatos já
+      presentes no CSV de saída são pulados numa nova execução.</li>
+  </ol>
+  <p>
+    Universo coberto: <strong>20.965 candidaturas</strong> nacionais nas Eleições Gerais
+    2026 (contagem obtida diretamente da API do TSE em 15/09/2026).
+  </p>
+
+  <h2>5. Etapa 2, classificação e análise de hospedagem</h2>
+  <p>Script: <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026/blob/master/scripts/analisar_sites.py" target="_blank"><code>scripts/analisar_sites.py</code></a> (usa <code>site_classifier.py</code> e <code>hosting_analysis.py</code>)</p>
+
+  <h3>5.1. Classificação (site próprio vs. rede social vs. outros)</h3>
+  <p>
+    O campo <code>sites</code> do TSE é um campo de texto livre por candidato, mistura
+    links de redes sociais (Instagram, Facebook, X/Twitter, TikTok, YouTube,
+    Kwai, Threads, LinkedIn, Telegram, WhatsApp, Discord), agregadores de
+    link (Linktree e similares), plataformas de financiamento coletivo
+    (QueroApoiar, Vakinha etc.) e, eventualmente, um domínio próprio do
+    candidato.
+  </p>
+  <p>
+    A regra de hospedagem no Brasil (art. 57-B) diz respeito ao <strong>"sítio do
+    candidato"</strong>, um domínio sobre o qual o candidato tem controle/escolha
+    de hospedagem, não aos perfis hospedados por terceiros (Meta, Google,
+    X etc.), cuja infraestrutura não é decisão do candidato. Por isso a
+    etapa de classificação (<code>site_classifier.py</code>) separa essas categorias
+    antes de aplicar a análise de hospedagem, evitando falsos positivos
+    ("Instagram não hospedado no Brasil" não é uma violação imputável ao
+    candidato).
+  </p>
+
+  <h3>5.2. Verificação de hospedagem no Brasil</h3>
+  <p>Para cada "site próprio":</p>
+  <ol>
+    <li>Resolve o domínio via DNS para um endereço IP.</li>
+    <li>Geolocaliza o IP via API pública gratuita (<code>ip-api.com</code>), obtendo
+      país, ISP/organização e ASN.</li>
+    <li>Marca <code>hospedado_no_brasil = True</code> se o código de país for <code>BR</code>.</li>
+  </ol>
+  <p>
+    <strong>Limitação crítica</strong>: geolocalização de IP não revela o servidor de
+    origem quando o site está atrás de um CDN/proxy global (Cloudflare,
+    Akamai, Fastly, Amazon CloudFront, Sucuri/Imperva etc.), o IP
+    resolvido é o do ponto de presença (PoP) mais próximo do requisitante,
+    não o do servidor real. Isso é <strong>extremamente comum</strong> em sites de
+    campanha, já que Cloudflare oferece plano gratuito e proteção contra
+    DDoS. Exemplo real encontrado durante o desenvolvimento deste projeto,
+    <code>lula.com.br</code> resolve para um IP da Cloudflare geolocalizado no
+    <strong>Canadá</strong>, o que, tomado ingenuamente, sugeriria hospedagem fora do
+    Brasil, mas na verdade só reflete a rede de borda da Cloudflare, sem
+    qualquer relação com onde o servidor de origem realmente está.
+  </p>
+  <p>
+    Por isso, <code>hosting_analysis.py</code> detecta a organização/ISP do IP contra
+    uma lista de provedores conhecidos de CDN/proxy e, quando identificado,
+    <strong>não afirma <code>hospedado_no_brasil = False</code></strong>, marca o campo como
+    indeterminado (<code>None</code>) e sinaliza <code>atras_de_cdn_proxy</code> com o nome do
+    provedor. Só é reportado <code>hospedado_no_brasil = False</code> com confiança
+    quando o IP resolvido pertence claramente a um provedor de hospedagem
+    comum (não um CDN de borda) fora do Brasil. Mesmo assim, casos
+    limítrofes precisam de checagem manual (ex.: histórico de DNS para
+    tentar identificar a origem real por trás do CDN) antes de qualquer
+    conclusão a ser comunicada ao TSE.
+  </p>
+
+  <h2>6. Limitações gerais do projeto</h2>
+  <ul>
+    <li>Cobertura depende da qualidade do que o próprio candidato preencheu no
+      cadastro (campo <code>sites</code> é de texto livre, sujeito a erros de digitação
+      que podem impedir a extração correta do domínio).</li>
+    <li>A análise de hospedagem foi feita em um único momento no tempo, um
+      site pode trocar de hospedagem ou ser retirado do ar depois da
+      coleta.</li>
+    <li>O projeto não verifica o conteúdo político/eleitoral dos sites, apenas
+      aspectos técnicos de hospedagem.</li>
+  </ul>
+
+  <h2>7. Reprodutibilidade</h2>
+  <p>
+    Todo o código está no
+    <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026" target="_blank">repositório no GitHub</a>.
+    Os dados brutos e processados (CSV) ficam versionados em <code>data/</code>,
+    permitindo auditoria externa de cada etapa. Ver
+    <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026/blob/master/README.md" target="_blank">README.md</a>
+    para instruções de execução.
+  </p>
+
+  <footer>
+    <a href="index.html">Início</a> ·
+    <a href="dados.html">Dados</a> ·
+    <a href="analise.html">Análise</a>
+  </footer>
+
+</div>
+</body>
+</html>
