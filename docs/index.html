@@ -9,7 +9,7 @@
 <body>
 
 <nav class="topbar">
-  <span class="brand">Auditoria de Sites — Eleições 2026</span>
+  <span class="brand">Auditoria de Sites, Eleições 2026</span>
   <a href="index.html" class="active">Início</a>
   <a href="dados.html">Dados</a>
   <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026" target="_blank">Código no GitHub ↗</a>
@@ -17,7 +17,7 @@
 
 <div class="wrap">
 
-  <h1>Onde estão hospedados os sites dos candidatos em 2026?</h1>
+  <h1 style="text-align:center;">Onde estão hospedados os sites dos candidatos em 2026?</h1>
   <p class="lead">
     Levantamento independente sobre as <strong>20.965 candidaturas</strong> das
     Eleições Gerais 2026 (Presidente, Governador, Senador, Deputado Federal e
@@ -34,7 +34,7 @@
   </div>
 
   <p style="text-align:center; margin: 24px 0 40px;">
-    <a class="btn" href="dados.html">Ver a tabela completa e filtrar por UF, partido, cargo →</a>
+    <a class="btn" href="dados.html">Ver a tabela completa</a>
   </p>
 
   <h2>De onde vêm esses dados?</h2>
@@ -42,8 +42,8 @@
     <p>
       Tudo aqui vem de uma única fonte: a <strong>API pública do próprio
       painel oficial do TSE</strong>, o
-      <a href="https://divulgacandcontas.tse.jus.br/divulga/" target="_blank">Divulgação de Candidaturas e Contas Eleitorais</a>
-      — o mesmo sistema que qualquer pessoa pode consultar candidato por
+      <a href="https://divulgacandcontas.tse.jus.br/divulga/" target="_blank">Divulgação de Candidaturas e Contas Eleitorais</a>,
+      o mesmo sistema que qualquer pessoa pode consultar candidato por
       candidato no site do TSE. Nenhuma base paga, vazada ou privada foi
       usada.
     </p>
@@ -55,21 +55,21 @@
         eletrônicos que o próprio candidato declarou à Justiça Eleitoral
         (é obrigatório declarar, conforme a lei citada abaixo).</li>
       <li>Separamos o que é efetivamente um <em>site próprio</em> do que é só
-        um perfil em rede social (Instagram, Facebook, TikTok etc.) — a regra
+        um perfil em rede social (Instagram, Facebook, TikTok etc.). A regra
         de hospedagem só faz sentido para o site próprio, já que redes
-        sociais são hospedadas pelas próprias empresas (Meta, Google, X…),
-        não é escolha do candidato.</li>
+        sociais são hospedadas pelas próprias empresas, Meta, Google, X,
+        e a hospedagem não é escolha do candidato.</li>
       <li>Para cada site próprio, descobrimos o servidor por trás do domínio
         (via DNS) e verificamos em qual país esse servidor está
         geograficamente localizado.</li>
     </ol>
     <p style="margin-bottom:0;">
-      Quer entender os detalhes técnicos — como contornamos bloqueios do site
+      Quer entender os detalhes técnicos, como contornamos bloqueios do site
       do TSE, os limites do método de geolocalização, os critérios de
       classificação etc.? Toda a metodologia completa, o código-fonte e os
       dados brutos estão documentados no
-      <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026" target="_blank">repositório no GitHub</a>
-      — em especial o arquivo
+      <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026" target="_blank">repositório no GitHub</a>,
+      em especial o arquivo
       <a href="https://github.com/raschmitt/auditoria-sites-candidatos-2026/blob/main/docs/METODOLOGIA.md" target="_blank">METODOLOGIA.md</a>.
     </p>
   </div>
@@ -78,13 +78,13 @@
   <div class="card">
     <ul class="legis">
       <li>
-        <strong>Lei nº 9.504/1997 (Lei das Eleições), art. 57-B, inciso I</strong> —
+        <strong>Lei nº 9.504/1997 (Lei das Eleições), art. 57-B, inciso I</strong>,
         permite propaganda eleitoral em site do candidato, mas exige que o
         endereço eletrônico seja comunicado à Justiça Eleitoral.
         <br><a href="https://www.planalto.gov.br/ccivil_03/leis/l9504.htm" target="_blank">Ler a lei no Planalto ↗</a>
       </li>
       <li>
-        <strong>Resolução TSE nº 23.610/2019</strong> — regulamenta a
+        <strong>Resolução TSE nº 23.610/2019</strong>, regulamenta a
         propaganda eleitoral na internet, incluindo a exigência de que o
         site esteja hospedado em servidor no Brasil.
         <br><a href="https://www.tse.jus.br/legislacao/compilada/res/2019/resolucao-no-23-610-de-18-de-dezembro-de-2019" target="_blank">Ver a resolução no site do TSE ↗</a>
