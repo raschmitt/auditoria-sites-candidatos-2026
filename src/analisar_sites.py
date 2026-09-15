@@ -40,7 +40,7 @@ OUT_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "processed", "s
 LOG_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "logs", "analisar_sites.log")
 
 FIELDS = [
-    "candidato_id", "nome_urna", "uf", "cargo_nome", "partido_sigla",
+    "candidato_id", "numero", "nome_urna", "uf", "cargo_nome", "partido_sigla",
     "url_declarada", "dominio",
     "ip", "pais", "pais_codigo", "hospedado_no_brasil", "atras_de_cdn_proxy", "hospedagem_erro",
 ]
@@ -80,6 +80,7 @@ def _analisar_um(cand: dict, site: dict) -> dict:
     hosp = analisar_hospedagem(site["dominio"])
     return {
         "candidato_id": cand["id"],
+        "numero": cand["numero"],
         "nome_urna": cand["nome_urna"],
         "uf": cand["uf"],
         "cargo_nome": cand["cargo_nome"],

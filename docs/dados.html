@@ -42,6 +42,7 @@
       <thead>
         <tr>
           <th data-sort="nome_urna">Candidato<span class="sort-arrow"></span></th>
+          <th data-sort="numero">Nº Urna<span class="sort-arrow"></span></th>
           <th data-sort="uf">UF<span class="sort-arrow"></span></th>
           <th data-sort="cargo_nome">Cargo<span class="sort-arrow"></span></th>
           <th data-sort="partido_sigla">Partido<span class="sort-arrow"></span></th>
@@ -67,6 +68,21 @@
 </div>
 
 <script>
+const ELEICAO_ID = '20322002026';
+const UF_REGIAO = {
+  BR: 'BR',
+  AC: 'NORTE', AM: 'NORTE', AP: 'NORTE', PA: 'NORTE', RO: 'NORTE', RR: 'NORTE', TO: 'NORTE',
+  AL: 'NORDESTE', BA: 'NORDESTE', CE: 'NORDESTE', MA: 'NORDESTE', PB: 'NORDESTE',
+  PE: 'NORDESTE', PI: 'NORDESTE', RN: 'NORDESTE', SE: 'NORDESTE',
+  DF: 'CENTROOESTE', GO: 'CENTROOESTE', MS: 'CENTROOESTE', MT: 'CENTROOESTE',
+  ES: 'SUDESTE', MG: 'SUDESTE', RJ: 'SUDESTE', SP: 'SUDESTE',
+  PR: 'SUL', RS: 'SUL', SC: 'SUL',
+};
+function linkTse(r) {
+  const regiao = UF_REGIAO[r.uf] || r.uf;
+  return `https://divulgacandcontas.tse.jus.br/divulga/#/candidato/${regiao}/${r.uf}/${ELEICAO_ID}/${r.candidato_id}/2026/${r.uf}`;
+}
+
 const PAGE_SIZE = 50;
 let ALL = [];
 let FILTERED = [];
@@ -107,7 +123,7 @@ function aplicarFiltros() {
     if (partido && r.partido_sigla !== partido) return false;
     if (status && statusDe(r) !== status) return false;
     if (busca) {
-      const alvo = (r.nome_urna + ' ' + r.dominio).toLowerCase();
+      const alvo = (r.nome_urna + ' ' + r.dominio + ' ' + r.numero).toLowerCase();
       if (!alvo.includes(busca)) return false;
     }
     return true;
@@ -169,7 +185,8 @@ function render() {
     const s = statusDe(r);
     const pais = r.pais ? `${r.pais}${r.ip ? ' ('+r.ip+')' : ''}` : (r.hospedagem_erro ? '—' : (r.atras_de_cdn_proxy || '—'));
     return `<tr>
-      <td>${esc(r.nome_urna)}</td>
+      <td><a href="${linkTse(r)}" target="_blank" rel="noopener" title="Ver candidato no TSE">${esc(r.nome_urna)}</a></td>
+      <td>${esc(r.numero)}</td>
       <td>${esc(r.uf)}</td>
       <td>${esc(r.cargo_nome)}</td>
       <td>${esc(r.partido_sigla)}</td>
