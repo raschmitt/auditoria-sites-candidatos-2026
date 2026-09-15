@@ -134,7 +134,7 @@ ul.legis li { margin-bottom: 10px; }
 .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); }
 table { border-collapse: collapse; width: 100%; font-size: 13.5px; white-space: nowrap; }
 thead th {
-  text-align: left;
+  text-align: center;
   background: var(--bg-card);
   color: var(--text-dim);
   padding: 10px 12px;
@@ -142,7 +142,7 @@ thead th {
   position: sticky;
   top: 0;
 }
-tbody td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+tbody td { padding: 8px 12px; border-bottom: 1px solid var(--border); text-align: center; }
 tbody tr:hover { background: #1a1f28; }
 tbody td.dom a { color: var(--text); }
 
