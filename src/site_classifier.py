@@ -19,8 +19,13 @@ REDES_SOCIAIS = {
     "facebook.com", "fb.com", "instagram.com", "twitter.com", "x.com",
     "tiktok.com", "youtube.com", "youtu.be", "kwai.com", "threads.com",
     "threads.net", "linkedin.com", "t.me", "telegram.me", "telegram.org",
-    "whatsapp.com", "wa.me", "discord.gg", "discord.com", "spotify.com",
+    "whatsapp.com", "wa.me", "api.whatsapp.com", "chat.whatsapp.com",
+    "discord.gg", "discord.com", "spotify.com", "open.spotify.com",
     "flickr.com", "pinterest.com", "snapchat.com",
+    "bsky.app", "bsky.social", "truthsocial.com", "gettr.com",
+    "twitch.tv", "sticker.ly", "deezer.com", "deezer.page.link",
+    "music.amazon.com", "music.amazon.com.br", "clubhouse.com",
+    "mastodon.social", "reddit.com", "telegram.dog",
 }
 
 AGREGADORES_DE_LINK = {
@@ -57,7 +62,15 @@ def extrair_dominio(url_bruta: str) -> str | None:
         host = parsed.netloc or parsed.path.split("/")[0]
         host = host.split("@")[-1]  # remove eventual user@ residual
         host = host.split(":")[0]  # remove porta
-        return host.lstrip("www.") if host.startswith("www.") else host
+        if host.startswith("www."):
+            host = host[len("www."):]
+        # Um domínio real tem pelo menos um ponto (ex.: "exemplo.com.br").
+        # Entradas sem ponto são lixo de digitação (handle solto tipo
+        # "@fulano" ou nome de plataforma sem TLD, ex.: "whatsapp") e não
+        # representam um site verificável.
+        if "." not in host or not re.match(r"^[a-z0-9.\-]+$", host):
+            return None
+        return host
     except Exception:
         return None
 

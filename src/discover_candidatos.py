@@ -73,7 +73,7 @@ def main(concurrency: int = 15) -> None:
         estrutura = client.get_json(f"eleicao/eleicao-atual?idEleicao={ELEICAO_ID}")
         if not estrutura:
             log("ERRO: não foi possível obter a estrutura nacional da eleição.")
-            return
+            sys.exit(1)  # força o supervisor a tratar como falha e tentar de novo
 
         # Monta lista de (uf, cargo_codigo, cargo_nome) a percorrer
         alvo: list[tuple[str, int, str]] = []
@@ -98,33 +98,42 @@ def main(concurrency: int = 15) -> None:
                 continue
             log(f"{uf}/{cargo_nome}: {len(candidatos)} candidatos, {len(pendentes)} pendentes.")
 
-            paths = [
-                f"candidatura/buscar/{ANO}/{uf}/{ELEICAO_ID}/candidato/{c['id']}"
-                for c in pendentes
-            ]
-            detalhes = client.get_json_many(paths, concurrency=concurrency)
+            # Processa em sub-lotes pequenos e grava no CSV a cada sub-lote
+            # concluído — assim, se o processo for interrompido/travar no
+            # meio de uma UF/cargo grande (ex.: RJ tem 1188 candidatos a
+            # deputado estadual), o progresso já feito não se perde: a
+            # retomada pula direto para os sub-lotes ainda não gravados.
+            SUBLOTE = 100
+            for j in range(0, len(pendentes), SUBLOTE):
+                subpendentes = pendentes[j : j + SUBLOTE]
+                paths = [
+                    f"candidatura/buscar/{ANO}/{uf}/{ELEICAO_ID}/candidato/{c['id']}"
+                    for c in subpendentes
+                ]
+                detalhes = client.get_json_many(paths, concurrency=concurrency)
 
-            rows = []
-            for cand, det in zip(pendentes, detalhes):
-                sites = det.get("sites") if det else None
-                rows.append({
-                    "id": cand["id"],
-                    "numero": cand["numero"],
-                    "nome_urna": cand.get("nomeUrna"),
-                    "nome_completo": (det or {}).get("nomeCompleto") or cand.get("nomeCompleto"),
-                    "cpf": (det or {}).get("cpf"),
-                    "uf": uf,
-                    "cargo_codigo": cargo_cod,
-                    "cargo_nome": cargo_nome,
-                    "partido_sigla": (det or {}).get("partido", {}).get("sigla") if det else None,
-                    "partido_numero": (det or {}).get("partido", {}).get("numero") if det else None,
-                    "situacao": cand.get("descricaoSituacao"),
-                    "totalizacao": cand.get("descricaoTotalizacao"),
-                    "sites_json": json.dumps(sites, ensure_ascii=False) if sites else "",
-                })
-                done_ids.add(str(cand["id"]))
-            append_rows(rows)
-            total_novos += len(rows)
+                rows = []
+                for cand, det in zip(subpendentes, detalhes):
+                    sites = det.get("sites") if det else None
+                    rows.append({
+                        "id": cand["id"],
+                        "numero": cand["numero"],
+                        "nome_urna": cand.get("nomeUrna"),
+                        "nome_completo": (det or {}).get("nomeCompleto") or cand.get("nomeCompleto"),
+                        "cpf": (det or {}).get("cpf"),
+                        "uf": uf,
+                        "cargo_codigo": cargo_cod,
+                        "cargo_nome": cargo_nome,
+                        "partido_sigla": (det or {}).get("partido", {}).get("sigla") if det else None,
+                        "partido_numero": (det or {}).get("partido", {}).get("numero") if det else None,
+                        "situacao": cand.get("descricaoSituacao"),
+                        "totalizacao": cand.get("descricaoTotalizacao"),
+                        "sites_json": json.dumps(sites, ensure_ascii=False) if sites else "",
+                    })
+                    done_ids.add(str(cand["id"]))
+                append_rows(rows)
+                total_novos += len(rows)
+                log(f"  ... {uf}/{cargo_nome}: sub-lote {j + len(subpendentes)}/{len(pendentes)} salvo.")
 
         log(f"Concluído. {total_novos} novos candidatos salvos nesta execução. "
             f"Total acumulado: {len(done_ids)}.")

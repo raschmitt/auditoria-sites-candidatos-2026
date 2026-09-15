@@ -146,12 +146,28 @@ Para cada "site próprio":
    país, ISP/organização e ASN.
 3. Marca `hospedado_no_brasil = True` se o código de país for `BR`.
 
-**Limitação**: geolocalização de IP não é 100% infalível — CDNs globais
-(Cloudflare, AWS CloudFront etc.) podem servir conteúdo de múltiplos
-países a partir de um único IP "âncora" registrado em outro país, ou
-vice-versa. Casos limítrofes (ex.: um provedor de hospedagem
-internacional com operação legal no Brasil) precisam de checagem manual
-antes de qualquer conclusão.
+**Limitação crítica**: geolocalização de IP não revela o servidor de
+origem quando o site está atrás de um CDN/proxy global (Cloudflare,
+Akamai, Fastly, Amazon CloudFront, Sucuri/Imperva etc.) — o IP
+resolvido é o do ponto de presença (PoP) mais próximo do requisitante,
+não o do servidor real. Isso é **extremamente comum** em sites de
+campanha, já que Cloudflare oferece plano gratuito e proteção contra
+DDoS. Exemplo real encontrado durante o desenvolvimento deste projeto:
+`lula.com.br` resolve para um IP da Cloudflare geolocalizado no
+**Canadá** — o que, tomado ingenuamente, sugeriria hospedagem fora do
+Brasil, mas na verdade só reflete a rede de borda da Cloudflare, sem
+qualquer relação com onde o servidor de origem realmente está.
+
+Por isso, `hosting_analysis.py` detecta a organização/ISP do IP contra
+uma lista de provedores conhecidos de CDN/proxy e, quando identificado,
+**não afirma `hospedado_no_brasil = False`** — marca o campo como
+indeterminado (`None`) e sinaliza `atras_de_cdn_proxy` com o nome do
+provedor. Só é reportado `hospedado_no_brasil = False` com confiança
+quando o IP resolvido pertence claramente a um provedor de hospedagem
+comum (não um CDN de borda) fora do Brasil. Mesmo assim, casos
+limítrofes precisam de checagem manual (ex.: histórico de DNS para
+tentar identificar a origem real por trás do CDN) antes de qualquer
+conclusão a ser comunicada ao TSE.
 
 ### 5.3. Estimativa de autoria (pessoa física vs. pessoa jurídica)
 

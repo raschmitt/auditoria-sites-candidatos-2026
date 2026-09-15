@@ -29,7 +29,7 @@ LOG_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "logs", "analis
 FIELDS = [
     "candidato_id", "nome_urna", "uf", "cargo_nome", "partido_sigla",
     "url_declarada", "dominio",
-    "ip", "pais", "pais_codigo", "hospedado_no_brasil", "hospedagem_erro",
+    "ip", "pais", "pais_codigo", "hospedado_no_brasil", "atras_de_cdn_proxy", "hospedagem_erro",
     "meta_generator", "autoria_provavel", "pontos_pj", "pontos_pf",
     "whois_org", "evidencias_autoria",
 ]
@@ -99,6 +99,7 @@ def main() -> None:
                 "pais": hosp.get("pais"),
                 "pais_codigo": hosp.get("pais_codigo"),
                 "hospedado_no_brasil": hosp.get("hospedado_no_brasil"),
+                "atras_de_cdn_proxy": hosp.get("atras_de_cdn_proxy"),
                 "hospedagem_erro": hosp.get("erro"),
                 "meta_generator": autoria.get("meta_generator"),
                 "autoria_provavel": autoria.get("autoria_provavel"),
